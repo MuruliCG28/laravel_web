@@ -36,15 +36,10 @@ class AuthController extends Controller
     {
         return view('auth.registration');
     }
-      
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
-    public function postLogin(Request $request): RedirectResponse
+
+        // Show Login Form
+        public function login()
     {
-        // $param = 'SuVnXkzSDu';
         
         $param = array(
             'sid'=>'SuVnXkzSDu',
@@ -55,43 +50,92 @@ class AuthController extends Controller
             'method' => 'POST' ,
             'content' => http_build_query($param) ,
             'ignore_errors' => true,
-                ),"ssl" => [
-                "verify_peer" => false,
-                "verify_peer_name" => false,
-                // "cafile" => "C:/xampp/php/extras/ssl/cacert.pem", // Ensure the path is correct
-                ],
+        ),"ssl" => [
+        "verify_peer" => false,
+        "verify_peer_name" => false,
+        // "cafile" => "C:/xampp/php/extras/ssl/cacert.pem", // Ensure the path is correct
+        ],
         );
 
         // $baseUrl = str_replace(':8000', '', config('app.url'));
-        $unidAPI = "https://auth.unid.net/1.0.0/user/get_regist_token/";
+        $unidAPI = "https://auth2.unid.net/1.0.0/user/get_regist_token/"; 
+        // dd($unidAPI);
+
         $context = stream_context_create($options);
         $content = file_get_contents($unidAPI,false,$context);
+        
+        // $content = file_get_contents($unidAPI,false,stream_context_create($options));
+        // dd($content);
         $arr = json_decode($content, true);
+        // dd($arr);
         if($arr["status"]==0){
-            $unid_src = 'https://auth.unid.net/1.0.0/user/authorization?is_two_way=0&r_token='.$arr['r_token'].'&callback_url='.urlencode(route('callBackLogin'));
+            $unid_src = 'https://auth2.unid.net/1.0.0/user/authorization?is_two_way=0&r_token='.$arr['r_token'].'&callback_url='.urlencode(route('callBackLogin'));
+        
         }else{
             $unid_src = '';
         }
+        // dd($unid_src);
+        // if (empty($unid_src)) {
+        //     return view('login')->with('error', 'Unable to fetch authorization token.');
+        // } else {
+        //     return view('login', compact('unid_src'));
+        // }
 
-        $request->validate([
-            'email' => 'required',
-            'password' => 'required',
-        ]);
-   
-        $credentials = $request->only('email', 'password');
-        if (Auth::attempt($credentials)) {
+        // if (isset($arr["status"]) && $arr["status"] == 0 && isset($arr['r_token'])) {
+        //     $unid_src = 'https://auth2.unid.net/1.0.0/user/authorization?is_two_way=0&r_token=' . $arr['r_token'] . '&callback_url=' . urlencode(route('callBackLogin'));
+        // } else {
+        //     $unid_src = ''; // Fallback definition
+        // }
+    
+        return view('auth.login', compact('unid_src'));
 
-            // return view('auth.login');
-            // return view('dashboard',compact('param'));
+    }
 
-            // return redirect()->intended('dashboard')->with(compact('param'));
+    /**
+     * Write code on Method
+     *
+     * @return response()
+     */
+    public function postLogin(Request $request): RedirectResponse
+    {
+        if (Auth::attempt($request->only('email', 'password'))) {
+
+            $user_info = Crypt::encrypt(json_encode( ['id'=> Auth::user()->id]));
+
+            $param = array(
+                'sid'=>'SuVnXkzSDu',
+                'user_info'=> $user_info
+            );
+    
+            $options = array( 'http' => array(
+                'header' => 'Content-Type: application/x-www-form-urlencoded'."\r\n",
+                'method' => 'POST' ,
+                'content' => http_build_query($param) ,
+                'ignore_errors' => true,
+                        ),"ssl" => [
+                        "verify_peer" => false,
+                        "verify_peer_name" => false,
+                        // "cafile" => "C:/xampp/php/extras/ssl/cacert.pem", // Ensure the path is correct
+                        ],
+            );
+    
+            $unidAPI = "https://auth2.unid.net/1.0.0/user/get_regist_token/";
+            $context = stream_context_create($options);
+            $content = file_get_contents($unidAPI,false,$context);
+            $arr = json_decode($content, true);
+            // dd($arr);
+            if($arr["status"]==0){
+                $unid_src = 'https://auth2.unid.net/1.0.0/user/regist?r_token='.$arr['r_token'].'&callback_url='.urlencode('https://domain/unid/regist/complete');
+            }else{
+                $unid_src = '';
+            }
 
             return redirect()->intended('dashboard')->with('unid_src', $unid_src);
-
-            // return redirect()->intended('dashboard?param=$param')
-            //             ->withSuccess('You have Successfully loggedin');
+            // return view('dashboard',compact('unid_src'));
+            // return redirect()->route('dashboard');
         }
-  
+
+        //return back()->withErrors(['email' => 'Invalid credentials.']);
         return redirect("login")->withError('Oppes! You have entered invalid credentials');
     }
 
@@ -112,7 +156,7 @@ class AuthController extends Controller
             'ignore_errors' => true,
         ));
 
-        $unid_login = 'https://auth.unid.net/1.0.0/user/login/';
+        $unid_login = 'https://auth2.unid.net/1.0.0/user/login/';
         $contents = file_get_contents ($unid_login, false,stream_context_create($options) );
         $raw_info = json_decode($contents)->{'user_info'};
          $user_info = json_decode(Crypt::decrypt($raw_info));
@@ -199,7 +243,13 @@ class AuthController extends Controller
         Session::flush();
         Auth::logout();
   
-        return redirect("login")->withSuccess('Great! You have Successfully logged out');
+        return Redirect('/');
+
+        // return redirect('login')->with(Auth::logout());
+        // return redirect('/login');
+        // return view('auth.login');
+
+        // return redirect("login")->withSuccess('Great! You have Successfully logged out');
         // return redirect("login");
     }    
     

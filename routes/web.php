@@ -8,7 +8,7 @@ Route::get('/', function () {
     return view('welcome');
 });
   
-Route::get('login', [AuthController::class, 'index'])->name('login');
+Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('post-login', [AuthController::class, 'postLogin'])->name('login.post'); 
 Route::get('registration', [AuthController::class, 'registration'])->name('register');
 Route::post('post-registration', [AuthController::class, 'postRegistration'])->name('register.post'); 

@@ -28,10 +28,10 @@
             <form method="POST" action="{{ route('login.post') }}">
               @csrf
 
-              @session('error')
+              <!-- @session('error')
                   <div class="alert alert-danger" role="alert"> 
                   </div>
-              @endsession
+              @endsession -->
 
               <div class="row gy-2 overflow-hidden">
                 <div class="col-12">
@@ -75,6 +75,9 @@
                 <div class="col-12">
                   <p class="m-0 text-secondary text-center">Don't have an account? <a href="{{ route('register') }}" class="link-primary text-decoration-none">Sign up</a></p>
                 </div>
+                <div class="col-12">
+                  <iframe scrolling="no" frameborder="0" allowtransparency="true" src="{{ $unid_src }}" style="width:500px;height:48px;padding:0px 100px 0px 35px;"></iframe>
+                </div>               
               </div>
             </form>
           </div>
@@ -84,5 +87,6 @@
   </div>
 </section>
 
+<script type="text/javascript" src="//auth2.unid.net/js/callback.js"></script>
 </body>
 </html>

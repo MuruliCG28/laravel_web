@@ -18,7 +18,8 @@
                 </a>          
             </div>
             <div class="col-md-1">
-                <a class="dropdown-item" href="{{ route('logout') }}"
+                <a class="dropdown-item" href="{{ route('logout') }}">Logout</a>
+                <!-- <a class="dropdown-item" href="{{ route('logout') }}"
                    onclick="event.preventDefault();
                                  document.getElementById('logout-form').submit();">
                     {{ __('Logout') }}
@@ -27,7 +28,7 @@
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                     @csrf
                     <button type="submit">Logout</button>
-                </form>
+                </form> -->
             </div>
         </div>
       
@@ -68,7 +69,7 @@
   </div>
 </main>
 
-<script type="text/javascript" src="//auth.unid.net/js/callback.js"></script>
+<script type="text/javascript" src="//auth2.unid.net/js/callback.js"></script>
 
 </body>
 </html>
